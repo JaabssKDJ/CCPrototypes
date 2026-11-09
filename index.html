@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Counting Corn - Order & Inventory Management System</title>
+ 
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+ 
+  <style>
+    .badge-yellow { background-color: #FEF08A; color: #854D0E; }
+    .badge-green { background-color: #DCFCE7; color: #166534; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+
+
+
+  <header class="bg-amber-600 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-500 p-2 rounded-lg text-amber-950 font-bold">
+          <i data-lucide="wheat" class="w-6 h-6 inline-block"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-xl leading-tight">Counting Corn</h1>
+          <p class="text-xs text-amber-100">Xavier University – CSCC 21 Project</p>
+        </div>
+      </div>
+
+
+     
+      <nav class="flex items-center bg-amber-700/60 p-1 rounded-xl text-xs sm:text-sm font-medium">
+        <button onclick="switchRole('customer')" id="btn-customer" class="role-btn px-3 py-1.5 rounded-lg bg-white text-amber-900 shadow">
+          <i data-lucide="shopping-cart" class="w-4 h-4 inline mr-1"></i>Customer
+        </button>
+        <button onclick="switchRole('warehouse')" id="btn-warehouse" class="role-btn px-3 py-1.5 rounded-lg hover:text-amber-200">
+          <i data-lucide="warehouse" class="w-4 h-4 inline mr-1"></i>Warehouse
+        </button>
+      </nav>
+    </div>
+  </header>
+
+
+
+
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3">
+    <i data-lucide="bell" class="w-5 h-5 text-amber-400"></i>
+    <span id="toast-msg">Order status updated!</span>
+  </div>
+
+
+
+
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+
+  
+    <section id="view-customer" class="role-view space-y-6">
+      <div class="flex justify-between items-center border-b pb-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Corn Catalog</h2>
+          <p class="text-slate-500 text-sm">Select fresh produce directly from the farm.</p>
+        </div>
+        <button onclick="toggleCartModal(true)" class="relative bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-semibold transition">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          <span>Cart</span>
+          <span id="cart-count" class="bg-amber-900 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+        </button>
+      </div>
+
+
+
+
+      <div id="customer-catalog" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              </div>
+
+
+    
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mt-8">
+        <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+          <i data-lucide="package-search" class="w-5 h-5 text-amber-600"></i> Track Your Orders
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-500 border-b">
+              <tr>
+                <th class="p-3">Order ID</th>
+                <th class="p-3">Items</th>
+                <th class="p-3">Total Cost</th>
+                <th class="p-3">Delivery Address</th>
+                <th class="p-3">Status</th>
+              </tr>
+            </thead>
+            <tbody id="customer-orders-table">
+              
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+   
+    <section id="view-warehouse" class="role-view hidden space-y-6">
+      <div class="border-b pb-4">
+        <h2 class="text-2xl font-bold text-slate-900">Warehouse & Inventory Management</h2>
+        <p class="text-slate-500 text-sm">Log fresh stock arrivals and record unsellable/damaged corn.</p>
+      </div>
+
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-emerald-700">
+            <i data-lucide="plus-circle" class="w-5 h-5"></i> Record Harvest / Stock Arrival
+          </h3>
+          <form onsubmit="handleStockArrival(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Select Product</label>
+              <select id="arrival-product" class="w-full border rounded-xl p-2.5 text-sm bg-slate-50">
+                
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Quantity Added (kg)</label>
+              <input type="number" id="arrival-qty" min="1" required class="w-full border rounded-xl p-2.5 text-sm" placeholder="e.g. 100">
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-sm transition">
+              Add to Stock
+            </button>
+          </form>
+        </div>
+
+
+        
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-red-700">
+            <i data-lucide="trash-2" class="w-5 h-5"></i> Record Unsellable / Spoiled Corn
+          </h3>
+          <form onsubmit="handleSpoilageLog(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Select Product</label>
+              <select id="spoilage-product" class="w-full border rounded-xl p-2.5 text-sm bg-slate-50">
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Quantity Lost (kg)</label>
+              <input type="number" id="spoilage-qty" min="1" required class="w-full border rounded-xl p-2.5 text-sm" placeholder="e.g. 15">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Reason for Damage</label>
+              <select id="spoilage-reason" class="w-full border rounded-xl p-2.5 text-sm bg-slate-50">
+                <option value="Overripe / Mold">Overripe / Mold</option>
+                <option value="Pest Damage">Pest Damage</option>
+                <option value="Physical Transport Damage">Physical Transport Damage</option>
+              </select>
+            </div>
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-xl text-sm transition">
+              Record Inventory Loss
+            </button>
+          </form>
+        </div>
+      </div>
+
+
+     
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-lg font-bold mb-4">Inventory Audit Logs</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-500 border-b">
+              <tr>
+                <th class="p-3">Timestamp</th>
+                <th class="p-3">Type</th>
+                <th class="p-3">Product</th>
+                <th class="p-3">Quantity</th>
+                <th class="p-3">Details / Reason</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-audit-table">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+  </main>
+
+
+
+
+  <div id="cart-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-end">
+    <div class="bg-white w-full max-w-md h-full shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
+      <div>
+        <div class="flex justify-between items-center border-b pb-4">
+          <h3 class="text-lg font-bold">Your Order Cart</h3>
+          <button onclick="toggleCartModal(false)" class="text-slate-400 hover:text-slate-600">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+
+
+        
+        <div id="cart-items" class="py-4 divide-y divide-slate-100">
+        
+        </div>
+      </div>
+
+
+            <div class="border-t pt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Delivery Address</label>
+          <input type="text" id="cust-address-input" class="w-full border rounded-xl p-2.5 text-sm" placeholder="e.g. Divisoria, Cagayan de Oro">
+        </div>
+
+
+        <div class="flex justify-between font-bold text-slate-900 text-base">
+          <span>Total:</span>
+          <span id="cart-total-price">₱0.00</span>
+        </div>
+
+
+        <button onclick="submitCustomerOrder()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl transition">
+          Confirm & Place Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // --- APP STATE ---
+    let state = {
+      products: [
+        { id: 'p1', name: 'Yellow Sweet Corn', price: 45, unit: 'kg', stock: 450, img: '🌽' },
+        { id: 'p2', name: 'White Glutinous Corn', price: 50, unit: 'kg', stock: 200, img: '🌾' },
+        { id: 'p3', name: 'Young Baby Corn', price: 80, unit: 'kg', stock: 85, img: '🌱' }
+      ],
+      orders: [
+        { id: 'ORD-1001', customer: 'Kristina Abejay', items: [{ id: 'p1', name: 'Yellow Sweet Corn', qty: 10, price: 45 }], total: 450, address: 'Divisoria, Cagayan de Oro', status: 'Pending' }
+      ],
+      auditLogs: [],
+      cart: []
+    };
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      renderCustomerCatalog();
+      renderWarehouseOptions();
+      renderWarehouseLogs();
+      renderCustomerOrders();
+    });
+
+
+   
+    function switchRole(role) {
+      document.querySelectorAll('.role-view').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-amber-900', 'shadow');
+        btn.classList.add('hover:text-amber-200');
+      });
+
+
+      document.getElementById(`view-${role}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`btn-${role}`);
+      activeBtn.classList.add('bg-white', 'text-amber-900', 'shadow');
+    }
+
+
+    
+    function renderCustomerCatalog() {
+      const container = document.getElementById('customer-catalog');
+      container.innerHTML = state.products.map(p => `
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="text-4xl mb-3">${p.img}</div>
+            <h3 class="font-bold text-slate-900 text-lg">${p.name}</h3>
+            <p class="text-amber-600 font-extrabold text-xl mt-1">₱${p.price.toFixed(2)} <span class="text-xs text-slate-400 font-normal">/ ${p.unit}</span></p>
+            <div class="mt-2 text-xs font-semibold ${p.stock > 50 ? 'text-emerald-600' : 'text-red-500'}">
+              ${p.stock > 0 ? `In Stock: ${p.stock} ${p.unit}` : 'Out of Stock'}
+            </div>
+          </div>
+          <button onclick="addToCart('${p.id}')" ${p.stock === 0 ? 'disabled' : ''} class="mt-4 w-full bg-slate-900 hover:bg-amber-600 text-white font-medium py-2 rounded-xl text-sm transition disabled:bg-slate-300">
+            Add to Order
+          </button>
+        </div>
+      `).join('');
+    }
+
+
+    function addToCart(productId) {
+      const item = state.products.find(p => p.id === productId);
+      const existing = state.cart.find(c => c.id === productId);
+      if (existing) {
+        if (existing.qty < item.stock) existing.qty++;
+      } else {
+        state.cart.push({ ...item, qty: 1 });
+      }
+      updateCartUI();
+      showToast(`Added ${item.name} to cart.`);
+    }
+
+
+    function updateCartUI() {
+      document.getElementById('cart-count').innerText = state.cart.reduce((sum, i) => sum + i.qty, 0);
+      const itemsContainer = document.getElementById('cart-items');
+     
+      itemsContainer.innerHTML = state.cart.length === 0 ? `<p class="text-slate-400 text-sm text-center py-6">Your cart is empty.</p>` : state.cart.map(i => `
+        <div class="py-3 flex justify-between items-center">
+          <div>
+            <p class="font-bold text-sm text-slate-800">${i.name}</p>
+            <p class="text-xs text-slate-500">₱${i.price} x ${i.qty}</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="changeCartQty('${i.id}', -1)" class="w-6 h-6 border rounded-lg">-</button>
+            <span class="text-sm font-semibold">${i.qty}</span>
+            <button onclick="changeCartQty('${i.id}', 1)" class="w-6 h-6 border rounded-lg">+</button>
+          </div>
+        </div>
+      `).join('');
+
+
+      const total = state.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      document.getElementById('cart-total-price').innerText = `₱${total.toFixed(2)}`;
+    }
+
+
+    function changeCartQty(id, delta) {
+      const item = state.cart.find(i => i.id === id);
+      const product = state.products.find(p => p.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty > product.stock) item.qty = product.stock;
+      if (item.qty <= 0) state.cart = state.cart.filter(i => i.id !== id);
+      updateCartUI();
+    }
+
+
+    function toggleCartModal(show) {
+      const modal = document.getElementById('cart-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+
+    function submitCustomerOrder() {
+      if (state.cart.length === 0) return alert('Cart is empty!');
+      const address = document.getElementById('cust-address-input').value.trim() || 'Xavier University Main Campus, CDO';
+
+
+      const newOrder = {
+        id: `ORD-${1000 + state.orders.length + 1}`,
+        customer: 'Karylle Dianne Duroy',
+        items: [...state.cart],
+        total: state.cart.reduce((sum, i) => sum + (i.price * i.qty), 0),
+        address: address,
+        status: 'Pending'
+      };
+
+
+      // Deduct stock
+      state.cart.forEach(cartItem => {
+        const prod = state.products.find(p => p.id === cartItem.id);
+        if (prod) prod.stock -= cartItem.qty;
+      });
+
+
+      state.orders.unshift(newOrder);
+      state.cart = [];
+      updateCartUI();
+      toggleCartModal(false);
+
+
+      renderCustomerCatalog();
+      renderCustomerOrders();
+      renderWarehouseOptions();
+      showToast('Order placed successfully!');
+    }
+
+
+    function renderCustomerOrders() {
+      const container = document.getElementById('customer-orders-table');
+      container.innerHTML = state.orders.map(o => `
+        <tr class="border-b">
+          <td class="p-3 font-semibold">${o.id}</td>
+          <td class="p-3">${o.items.map(i => `${i.name} (${i.qty})`).join(', ')}</td>
+          <td class="p-3 font-bold">₱${o.total.toFixed(2)}</td>
+          <td class="p-3 text-slate-500">${o.address}</td>
+          <td class="p-3"><span class="px-2 py-1 text-xs rounded-full badge-yellow">${o.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+
+    
+    function renderWarehouseOptions() {
+      const optionsHtml = state.products.map(p => `<option value="${p.id}">${p.name} (Current: ${p.stock} ${p.unit})</option>`).join('');
+      document.getElementById('arrival-product').innerHTML = optionsHtml;
+      document.getElementById('spoilage-product').innerHTML = optionsHtml;
+    }
+
+
+    function handleStockArrival(e) {
+      e.preventDefault();
+      const prodId = document.getElementById('arrival-product').value;
+      const qty = parseInt(document.getElementById('arrival-qty').value);
+      const prod = state.products.find(p => p.id === prodId);
+
+
+      if (prod && qty > 0) {
+        prod.stock += qty;
+        state.auditLogs.unshift({
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type: 'Harvest Arrival',
+          product: prod.name,
+          qty: qty,
+          details: 'New harvest restock added to warehouse.'
+        });
+
+
+        renderCustomerCatalog();
+        renderWarehouseOptions();
+        renderWarehouseLogs();
+        document.getElementById('arrival-qty').value = '';
+        showToast(`Added ${qty}kg to ${prod.name}`);
+      }
+    }
+
+
+    function handleSpoilageLog(e) {
+      e.preventDefault();
+      const prodId = document.getElementById('spoilage-product').value;
+      const qty = parseInt(document.getElementById('spoilage-qty').value);
+      const reason = document.getElementById('spoilage-reason').value;
+      const prod = state.products.find(p => p.id === prodId);
+
+
+      if (prod && qty > 0) {
+        if (qty > prod.stock) return alert('Spoilage quantity cannot exceed current stock!');
+        prod.stock -= qty;
+        state.auditLogs.unshift({
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type: 'Spoilage',
+          product: prod.name,
+          qty: qty,
+          details: `Reason: ${reason}`
+        });
+
+
+        renderCustomerCatalog();
+        renderWarehouseOptions();
+        renderWarehouseLogs();
+        document.getElementById('spoilage-qty').value = '';
+        showToast(`Recorded ${qty}kg spoilage loss.`);
+      }
+    }
+
+
+    function renderWarehouseLogs() {
+      const container = document.getElementById('inventory-audit-table');
+      container.innerHTML = state.auditLogs.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">No inventory logs yet.</td></tr>` : state.auditLogs.map(l => `
+        <tr class="border-b text-xs">
+          <td class="p-3 text-slate-500">${l.timestamp}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded ${l.type === 'Spoilage' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">${l.type}</span></td>
+          <td class="p-3 font-semibold">${l.product}</td>
+          <td class="p-3 font-bold">${l.qty} kg</td>
+          <td class="p-3 text-slate-600">${l.details}</td>
+        </tr>
+      `).join('');
+    }
+
+
+    // --- HELPERS ---
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').innerText = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+  </script>
+</body>
+</html>
+
